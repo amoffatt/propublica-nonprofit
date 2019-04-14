@@ -23,7 +23,7 @@ def check_c_code(c_code):
     """
         Returns true if c_code is a valid tax code id; false otherwise.
     """
-    c_codes = range(2, 29)
+    c_codes = list(range(2, 29))
     c_codes.append(92)
 
     if c_code not in c_codes:
@@ -88,7 +88,7 @@ class SearchClient(Client):
         """
 
         params = {}
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
 
             if key == 'state':
                 check_state(value)
@@ -104,7 +104,7 @@ class SearchClient(Client):
 
             params[key] = value
 
-        params = urllib.urlencode(params)
+        params = urllib.parse.urlencode(params)
         path = 'search.json?%s' % (params)
         return self.fetch(path, lambda orgs: orgs['organizations'])
 
@@ -128,4 +128,3 @@ class Nonprofit(Client):
         super(Nonprofit, self).__init__(cache)
         self.search = SearchClient(cache)
         self.orgs = OrgsClient(cache)
-        

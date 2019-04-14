@@ -1,7 +1,12 @@
 # Propublica Nonprofit Explorer Client
+**[forked from: https://github.com/robrem/propublica-nonprofit][https://github.com/robrem/propublica-nonprofit]**
+
+
 Python client for the ProPublica [NonProfit Explorer API](https://www.propublica.org/datastore/api/nonprofit-explorer-api "ProPublica Nonprofit Explorer API docs").
 
 Query data on over 1.6 million nonprofit organizations. No API key is required, but please refer to ProPublica's terms of use.
+
+Changed to work with Python 3+ syntax only.
 
 ## Usage
 ```
@@ -39,3 +44,6 @@ Query data on over 1.6 million nonprofit organizations. No API key is required, 
 'DELTA DELTA DELTA CORP'
 
 ```
+
+
+[]: https://github.com/robrem/propublica-nonprofit
