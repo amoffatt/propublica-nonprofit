@@ -1,12 +1,12 @@
+import itertools
 import unittest
-import json
 import httplib2
 import urllib
-from nonprofit import Nonprofit, NonprofitError, check_ntee, check_c_code, check_state
+from nonprofit import Nonprofit, NonprofitError, check_ntee, check_c_code, check_state, json_loads
 
 # Test cases
 EIN = '142007220'
-ORG = 'Delta'
+ORG = 'Science'
 US_STATE = 'CA'
 NTEE = 7     # Public, Societal Benefit
 C_CODE = 3   # 501(c)(3)
@@ -20,7 +20,9 @@ class NonprofitTest(unittest.TestCase):
 
 
     def check_response(self, result, url):
-        resp = json.loads(self.http.request(url)[1])
+        resp = json_loads(self.http.request(url)[1])
+        
+        del result.all_organizations    # TODO remove this from comparison more gracefully...
         self.assertEqual(result, resp)
 
 
@@ -29,6 +31,13 @@ class OrgsTest(NonprofitTest):
     def test_get_search_term(self):
         result = self.nonprofit.search.get(q=ORG)
         url = "https://projects.propublica.org/nonprofits/api/v2/search.json?q={0}".format(ORG)
+        self.check_response(result, url)
+        
+    def test_get_all_search_term(self):
+        result = self.nonprofit.search.get(q=ORG, state=US_STATE)
+        org_list = list(result.all_organizations())
+        url = "https://projects.propublica.org/nonprofits/api/v2/search.json?q={0}".format(ORG)
+        # TODO
         self.check_response(result, url)
 
 
@@ -61,6 +70,16 @@ class OrgsTest(NonprofitTest):
         org = self.nonprofit.orgs.get(EIN)
         url = "https://projects.propublica.org/nonprofits/api/v2/organizations/{0}.json".format(EIN)
         self.check_response(org, url)
+        
+    def test_max_results_overflow(self):
+        result = self.nonprofit.search.get(q='in')
+        with self.assertRaises(NonprofitError):
+            list(itertools.islice(result.all_organizations(), 10))
+        
+    def test_max_results(self):
+        result = self.nonprofit.search.get(q='in')
+        orgs = list(result.all_organizations(max_results=310))
+        self.assertEqual(len(orgs), 310)
 
 
 class ErrorTest(NonprofitTest):
