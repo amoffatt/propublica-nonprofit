@@ -4,6 +4,7 @@ A Python client for the ProPublica Nonprofit Explorer API.
 API docs: https://www.propublica.org/datastore/api/nonprofit-explorer-api
 """
 
+import sys
 import json
 import urllib
 import httplib2
@@ -111,7 +112,45 @@ class SearchClient(Client):
 
         params = urllib.parse.urlencode(params)
         path = 'search.json?%s' % (params)
-        return self.fetch(path, lambda orgs: orgs['organizations'])
+        result = self.fetch(path)
+        
+        result.all_organizations = self._get_all_orgs
+        
+        return result
+    
+    def _get_all_orgs(self, max_results=0, **kwargs):
+        """
+        Returns a generator of all queried organizations. Will make HTTP requests for subsequent API pages as the
+        generator runs, if there are more results than can fit on a single page.
+        Raises a NonprofitError if the query has more results than the ProPublica API can return (> 10,000).
+        """
+        page = 0
+        remaining_pages = True
+        i = 0
+        while remaining_pages:
+            result = self.get(page=page, **kwargs)
+            
+            if page == 0:
+                # only evaluate results overflow on the first page.
+                # If more results than API can return, and user defined max_results does not explicitly request fewer than the API's max, then raise an error
+                api_max_results = result.num_pages * result.per_page
+                
+                if result.total_results > api_max_results and (max_results == 0 or max_results > api_max_results):
+                    raise NonprofitError(f"Search has more results than ProPublica API can return ({result.total_results}). Try setting the max_results argument to a number <= {api_max_results}.")
+
+            for o in result.organizations:
+                yield o
+                i += 1
+                
+                if max_results > 0 and i >= max_results:
+                    return
+            
+            remaining_pages = page < result.num_pages
+            
+                
+            page += 1
+        
+        
 
 
 class OrgsClient(Client):
@@ -121,7 +160,7 @@ class OrgsClient(Client):
             identification number (ein).
         """
         path = 'organizations/{0}.json'.format(ein)
-        return self.fetch(path, lambda orgs: orgs['organization'])
+        return self.fetch(path)
 
 
 class Nonprofit(Client):
