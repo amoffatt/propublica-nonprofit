@@ -22,7 +22,8 @@ class NonprofitTest(unittest.TestCase):
     def check_response(self, result, url):
         resp = json_loads(self.http.request(url)[1])
         
-        del result.all_organizations    # TODO remove this from comparison more gracefully...
+        if hasattr(result, 'all_organizations'):
+            del result.all_organizations    # TODO remove this from comparison more gracefully...
         self.assertEqual(result, resp)
 
 

@@ -57,8 +57,22 @@ class NonprofitError(Exception):
         self.url = url
 
 
+    def _result_to_str(self, result):
+        return 
+    
+    
+class NonprofitObject(SimpleNamespace):
+    def __init__(self, obj):
+        super().__init__(**obj)
+        
+    def __repr__(self):
+        return self.__str__()
+    
+    def __str__(self):
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
+
 def json_loads(content):
-    return json.loads(content, object_hook=lambda d: SimpleNamespace(**d))
+    return json.loads(content, object_hook=NonprofitObject)
     
 
 class Client(object):
@@ -114,7 +128,7 @@ class SearchClient(Client):
         path = 'search.json?%s' % (params)
         result = self.fetch(path)
         
-        result.all_organizations = self._get_all_orgs
+        result.all_organizations = lambda max_results=0: self._get_all_orgs(max_results=max_results, **kwargs)
         
         return result
     
@@ -149,7 +163,6 @@ class SearchClient(Client):
             
                 
             page += 1
-        
         
 
 
