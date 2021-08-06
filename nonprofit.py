@@ -7,6 +7,7 @@ API docs: https://www.propublica.org/datastore/api/nonprofit-explorer-api
 import json
 import urllib
 import httplib2
+from types import SimpleNamespace
 
 
 def check_ntee(ntee):
@@ -55,6 +56,10 @@ class NonprofitError(Exception):
         self.url = url
 
 
+def json_loads(content):
+    return json.loads(content, object_hook=lambda d: SimpleNamespace(**d))
+    
+
 class Client(object):
 
     BASE_URI = "https://projects.propublica.org/nonprofits/api/v2/"
@@ -68,7 +73,7 @@ class Client(object):
         url = self.BASE_URI + path
 
         resp, content = self.http.request(url)
-        content = json.loads(content)
+        content = json_loads(content)
 
         # TODO: check for content not found
         if not resp.get('status') == '200':
