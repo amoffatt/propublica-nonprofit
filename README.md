@@ -18,10 +18,14 @@ Changed to work with Python 3+ syntax only.
 >>> org.organization.name
 'SCIENCEWORKS HANDS-ON MUSEUM'
 
+# get data for the most recent tax filing
 >>> last_filing = org.filings_with_data[0]
+
+# check the filing period
 >>> last_filing.tax_prd
 201912
 
+# get total revenue for that year
 >>> last_filing.totrevenue
 1138297
 
